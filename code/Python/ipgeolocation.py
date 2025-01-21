@@ -2,7 +2,7 @@ import geoip2
 import geoip2.database
 import pandas as pd
 
-reader = geoip2.database.Reader('../../data/external/GeoLite2-Country.mmdb')
+reader = geoip2.database.Reader('data/external/GeoLite2-Country.mmdb')
 
 def get_country(ip):
     try:

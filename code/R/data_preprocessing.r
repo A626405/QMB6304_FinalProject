@@ -1,7 +1,6 @@
 clrmem(1)
-load_lb(c("dplyr","tidyr"))
 
-raw_data <- vroom::vroom("../../data/internal/AWS_Honeypot_marx-geo.csv",delim=',',quote = "\"",col_names=T,num_threads=as.numeric(parallel::detectCores(logical=T)-1),col_types =c("c","c","c","i","i","c","n","n","c","c","c","c"),col_select=c("datetime","host","proto","spt","dpt","srcstr","longitude","latitude","country","locale","localeabbr","postalcode"))
+raw_data <- vroom::vroom("data/internal/AWS_Honeypot_marx-geo.csv",delim=',',quote = "\"",col_names=T,num_threads=as.numeric(parallel::detectCores(logical=T)-1),col_types =c("c","c","c","i","i","c","n","n","c","c","c","c"),col_select=c("datetime","host","proto","spt","dpt","srcstr","longitude","latitude","country","locale","localeabbr","postalcode"))
 
 raw_data <- raw_data |> 
   mutate("datetimes"= c(raw_data$datetime),"dates"= c(strptime(as.character(raw_data$datetime), format = "%m/%d/%y"))) |>
@@ -22,7 +21,7 @@ ips_to_check<-data.frame(cbind(working_data$datetime[na_indices],working_data$re
 
 library(reticulate)
 reticulate::use_python(python = "C:/Python312/python.exe")
-reticulate::py_run_file("../Python/ipgeolocation.py")
+reticulate::py_run_file("code/Python/ipgeolocation.py")
 
 ips_to_check1<- sapply(ips_to_check[,3], py$get_country)
 rm(ips_to_check)
@@ -75,7 +74,7 @@ working_data <- working_data |> mutate("ports"=NULL,"portsnum"=NULL,"servindex"=
 rm(Ports,Services,servdict)
 clrmem(2)
 
-portmatchdata<- vroom::vroom("../../data/external/service-names-port-numbers.csv",num_threads=as.numeric(parallel::detectCores(logical=T)-1),quote=c("\""),skip=1,delim=c(","),col_select=c(1:3),col_names=c("service","port","protocol"),col_types=c("c","c","c"),skip_empty_rows=T,na=c("",",,,","NA"),escape_double=T,progress=F)
+portmatchdata<- vroom::vroom("data/external/service-names-port-numbers.csv",num_threads=as.numeric(parallel::detectCores(logical=T)-1),quote=c("\""),skip=1,delim=c(","),col_select=c(1:3),col_names=c("service","port","protocol"),col_types=c("c","c","c"),skip_empty_rows=T,na=c("",",,,","NA"),escape_double=T,progress=F)
 portmatchdata<-na.omit(portmatchdata)
 clrmem(3)
 
@@ -86,10 +85,11 @@ clrmem(2)
 
 working_data<-working_data |> mutate("service"=NULL,"Ports"=NULL,"year"=NULL) |> rename("service"="Services") |> group_by(datetime) |> arrange(.by_group=T)
 
-save("working_data",file="../../data/internal/working_data.RDA",compress="gzip")
+save("working_data",file="data/internal/working_data.RDA",compress="gzip")
 clrmem(2)
 
-db1()
+create_db("data/internal/databases.db")
+save_db("data/internal/working_data.RDA","working_data.RDA","data/internal/databases.db","databases","file_name")
 
 rm(working_data)
 clrmem(1)

@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS databases (
 );
 ''')
 
+cursor.execute("CREATE INDEX file_name_idx1 ON working_data(file_name);")
+
 with open('data/internal/working_data.RDA', 'rb') as f:
   binary_data = f.read()
 

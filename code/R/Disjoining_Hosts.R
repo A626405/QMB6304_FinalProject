@@ -1,14 +1,7 @@
-#cleaned<-readRDS("data/internal/rds/cleaned.RDS")
-#source("sources/functions.R")
-gc()
-load(file = "data/internal/rda/cleaned.RDA")
+clrmem(1)
 
-require(tidyr)
-require(tibble)
-require(tidyselect)
-require(dplyr)
 
-maindf <- cleaned |> group_by(Datetime) |> arrange(.by_group = T)
+
 rm(cleaned)
 
 
